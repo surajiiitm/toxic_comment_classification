@@ -46,10 +46,72 @@ vectorizer = CountVectorizer(analyzer="word",
                              tokenizer=None,
                              preprocessor=None,
                              stop_words=None,
-                             max_features=2000)
+                             max_features=5000)
 
 train_data_features = vectorizer.fit_transform(processed_comment)
 train_data_features = train_data_features.toarray()
 
 print(train_data_features.shape)
+
+vocab = vectorizer.get_feature_names()
+
+dist = np.sum(train_data_features, axis=0)
+
+# define model
+import keras
+from keras.models import Sequential
+from keras.layers import Dense
+
+classifier = Sequential()
+classifier.add(Dense(720, input_shape=(5000,), activation='relu'))
+classifier.add(Dense(36, activation='relu'))
+classifier.add(Dense(6, activation='sigmoid'))
+
+classifier.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+
+classifier.fit(train_data_features, y_train, batch_size=100, epochs=5)
+
+# predicting the test set result
+test = pd.read_csv("test.csv")
+print(test.shape)
+
+num_reviews = len(test["comment_text"])
+clean_test_comments = []
+
+for i in range(0, num_reviews):
+    if (i+1)%1000 == 0:
+        print("comment %d of %d" %((i+1), num_reviews))
+    clean_test_comments.append(comment_to_words(test["comment_text"][i]))
+
+test_data_features = vectorizer.transform(clean_test_comments)
+test_data_features = test_data_features.toarray()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
